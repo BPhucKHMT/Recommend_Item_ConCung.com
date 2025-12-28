@@ -1,0 +1,12 @@
+{
+  "date_col": "created_date",
+  "anchor_date": "2024-12-31",
+  "len_hist": 120,
+  "len_val": 31,
+  "len_recent": 28,
+  "len_test": 7,
+  "N_trend": 100,
+  "N_cand": 20,
+  "session_window": 1,
+  "min_coo": 1
+}

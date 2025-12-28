@@ -1,0 +1,12 @@
+# Ignore các file không cần thiết trong data/table
+data/table/*.tmp
+data/table/*.bak
+data/table/~*
+data/table/*.log
+data/table/*.parquet
+# KHÔNG ignore các file .csv cần thiết trong data/table
+
+data/01-2025.pkl
+
+candidate_stage_2.3.parquet
+candidate_stage1.parquet
