@@ -22,15 +22,11 @@ Về data do vấn đề bảo mật, cần liên hệ riêng để download
 ├── item_data.csv
 ├── main.py
 ├── params.json
-├── prediction.json
-├── recall_metrics.json
 ├── reranking_lasso.py
 ├── reranking_logistic.py
 ├── reranking.py
-├── result.json
 ├── test_step_1.py
 ├── test.py
-├── unavailable_items.txt
 ├── data/
 │   └── table/
 │       ├── item_data.parquet
@@ -40,6 +36,7 @@ Về data do vấn đề bảo mật, cần liên hệ riêng để download
 │   ├── check_groundtruth_availability.ipynb
 │   ├── evaluate.ipynb
 │   └── test.ipynb
+│   └── ...
 └── ...
 ```
 
