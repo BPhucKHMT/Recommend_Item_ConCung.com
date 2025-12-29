@@ -4,6 +4,7 @@
 
 Hệ thống **Recommendation System** này được xây dựng để đề xuất sản phẩm cá nhân hóa cho khách hàng của ConCung.com, dựa trên lịch sử giao dịch, thông tin sản phẩm và các đặc trưng hành vi.
 
+Về data do vấn đề bảo mật, cần liên hệ riêng để download
 ---
 
 ## 📁 Cấu trúc thư mục
@@ -32,7 +33,7 @@ Hệ thống **Recommendation System** này được xây dựng để đề xu�
 ├── unavailable_items.txt
 ├── data/
 │   └── table/
-│       ├── item_data.csv
+│       ├── item_data.parquet
 │       └── ...
 ├── notebook/
 │   ├── check_date_item.ipynb
