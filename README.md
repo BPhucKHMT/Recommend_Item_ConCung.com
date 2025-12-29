@@ -110,7 +110,7 @@ Hệ thống **Recommendation System** này được xây dựng để đề xu�
 
 ### 5️⃣ Đánh giá
 
-- Module [`eval.py`](eval.py) đánh giá chất lượng đề xuất theo Recall@K, loại trừ các sản phẩm đã mua trong lịch sử.
+- Module [`eval.py`](eval.py) đánh giá chất lượng đề xuất theo Precision@10, loại trừ các sản phẩm đã mua trong lịch sử.
 - So sánh với groundtruth thực tế.
 
 ---
@@ -162,7 +162,7 @@ Hệ thống **Recommendation System** này được xây dựng để đề xu�
 ## 💡 Một số lưu ý chiến thuật
 
 - **Loại trừ sản phẩm không khả dụng**: Đảm bảo không recommend hàng đã ngừng kinh doanh.
-- **Tối ưu recall cho sản phẩm mới**: Chỉ tính điểm với sản phẩm chưa từng mua.
+- **Tối ưu precision cho sản phẩm mới**: Chỉ tính điểm với sản phẩm chưa từng mua.
 - **Đa dạng hóa đề xuất**: Không để 1 user nhận toàn sản phẩm cùng ngành hàng/brand.
 - **Tối ưu tốc độ**: Dùng Polars cho xử lý dữ liệu lớn, chia batch khi sinh đặc trưng.
 
@@ -179,9 +179,9 @@ Hệ thống **Recommendation System** này được xây dựng để đề xu�
 
 ---
 
-## 🤝 Đóng góp & Liên hệ
+## 🤝 Kết quả
 
-- Nếu có thắc mắc hoặc cần hỗ trợ, vui lòng liên hệ nhóm phát triển qua GitHub Issues hoặc email.
+- Đạt được precision@10 **4.96%**
 
 ---
 
