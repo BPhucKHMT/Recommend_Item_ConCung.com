@@ -9,4 +9,6 @@ data/table/*.parquet
 data/01-2025.pkl
 
 candidate_stage_2.3.parquet
-candidate_stage1.parquet
+candidates_stage1.parquet
+prediction.json
+final_submission.json
