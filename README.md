@@ -49,9 +49,8 @@ Về data do vấn đề bảo mật, cần liên hệ riêng để download
 
 ### 1️⃣ Tiền xử lý dữ liệu
 
-- Đọc dữ liệu giao dịch, sản phẩm từ `.csv`/`.parquet`.
-- Chuẩn hóa ngày tháng, loại bỏ các bản ghi thiếu thông tin.
-- Lọc các sản phẩm không khả dụng dựa trên [`unavailable_items.txt`](unavailable_items.txt).
+- Đọc dữ liệu giao dịch, sản phẩm từ `.parquet`.
+- Chuẩn hóa ngày tháng, loại bỏ các cột thiếu thông tin.
 
 ---
 
