@@ -181,7 +181,7 @@ Về data do vấn đề bảo mật, cần liên hệ riêng để download
 
 ## 🤝 Kết quả
 
-- Đạt được precision@10 **4.96%**
+- Đạt được precision@10 **4.96%** trên dữ liệu giao dịch tháng 2/2025
 
 ---
 
