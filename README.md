@@ -2,6 +2,9 @@
 
 ![RecSys](https://img.shields.io/badge/RecSys-Personalized-blue?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.8%2B-green?style=flat-square) ![Status](https://img.shields.io/badge/status-active-brightgreen?style=flat-square)
 
+<img width="1912" height="878" alt="image" src="https://github.com/user-attachments/assets/aac3531e-d522-4fd0-879b-29a94190e421" />
+
+
 Hệ thống **Recommendation System** này được xây dựng để đề xuất sản phẩm cá nhân hóa cho khách hàng của ConCung.com, dựa trên lịch sử giao dịch, thông tin sản phẩm và các đặc trưng hành vi.
 
 Về data do vấn đề bảo mật, cần liên hệ riêng để download
@@ -178,7 +181,7 @@ Về data do vấn đề bảo mật, cần liên hệ riêng để download
 
 ## 🤝 Kết quả
 
-- Đạt được precision@10 **4.96%** trên dữ liệu giao dịch tháng 2/2025
+- Đạt được precision@10 **10.96%** trên dữ liệu giao dịch tháng 2/2025
 
 ---
 
