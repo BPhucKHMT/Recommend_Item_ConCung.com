@@ -4,13 +4,13 @@
 
 <img width="1912" height="878" alt="image" src="https://github.com/user-attachments/assets/aac3531e-d522-4fd0-879b-29a94190e421" />
 
+A personalized **recommendation system** for ConCung.com customers. The system recommends products from transaction history, product metadata, and behavioral features.
 
-Hệ thống **Recommendation System** này được xây dựng để đề xuất sản phẩm cá nhân hóa cho khách hàng của ConCung.com, dựa trên lịch sử giao dịch, thông tin sản phẩm và các đặc trưng hành vi.
+Due to data privacy constraints, please contact the project owner directly to access the dataset.
 
-Về data do vấn đề bảo mật, cần liên hệ riêng để download
 ---
 
-## 📁 Cấu trúc thư mục
+## 📁 Project Structure
 
 ```
 .
@@ -38,150 +38,165 @@ Về data do vấn đề bảo mật, cần liên hệ riêng để download
 │   ├── check_date_item.ipynb
 │   ├── check_groundtruth_availability.ipynb
 │   ├── evaluate.ipynb
-│   └── test.ipynb
+│   ├── test.ipynb
 │   └── ...
 └── ...
 ```
 
 ---
 
-## 🚦 Pipeline & Chiến thuật chi tiết
+## 🚦 Pipeline and Strategy
 
-### 1️⃣ Tiền xử lý dữ liệu
+### 1️⃣ Data Preprocessing
 
-- Đọc dữ liệu giao dịch, sản phẩm từ `.parquet`.
-- Chuẩn hóa ngày tháng, loại bỏ các cột thiếu thông tin.
+- Load transaction and product data from `.parquet` files.
+- Normalize date fields and remove columns with insufficient information.
+- Filter unavailable products listed in [`unavailable_items.txt`](unavailable_items.txt).
 
 ---
 
-### 2️⃣ Sinh candidates (Ứng viên sản phẩm)
+### 2️⃣ Candidate Generation
 
-**Các chiến thuật chính:**
+**Main strategies:**
 
 - **ALS Matrix Factorization (Collaborative Filtering)**
-  - Sử dụng mô hình ALS (Alternating Least Squares) để học latent factors từ ma trận user-item, khai thác lịch sử mua hàng để đề xuất sản phẩm tương tự với hành vi người dùng.
-  - Chạy batch trên GPU nếu có (tối ưu tốc độ).
+  - Uses Alternating Least Squares (ALS) to learn latent factors from the user-item matrix.
+  - Exploits purchase history to recommend products that match user behavior.
+  - Supports GPU batch processing when available for better speed.
 
 - **BPR Ranking (Bayesian Personalized Ranking)**
-  - Học thứ tự ưu tiên sản phẩm cho từng user dựa trên lịch sử tương tác, tối ưu hóa cho implicit feedback.
+  - Learns product preference order for each user from historical interactions.
+  - Optimized for implicit feedback recommendation tasks.
 
 - **Item2Vec Embedding**
-  - Sử dụng Word2Vec để học embedding cho sản phẩm dựa trên chuỗi mua hàng, từ đó tìm sản phẩm tương tự.
+  - Uses Word2Vec to learn product embeddings from purchase sequences.
+  - Finds products that often appear in similar shopping contexts.
 
-- **Content-based Filtering**
-  - Sử dụng đặc trưng sản phẩm (brand, category, mô tả...) để tính toán độ tương đồng (cosine similarity, TF-IDF, FAISS GPU nếu có).
-  - Đề xuất sản phẩm tương tự về nội dung với các sản phẩm user từng mua.
+- **Content-Based Filtering**
+  - Uses product attributes such as brand, category, and description.
+  - Computes similarity with cosine similarity, TF-IDF, and FAISS GPU when available.
+  - Recommends content-similar products based on each user's past purchases.
 
 - **Trending Items**
-  - Đề xuất các sản phẩm đang bán chạy nhất trong khoảng thời gian gần đây, có thể lọc theo năm/tháng để loại trừ hàng cũ hoặc lỗi thời.
+  - Recommends best-selling products in recent time windows.
+  - Can filter by year or month to avoid outdated products.
 
-- **Segment-based Fallback (Cold Start)**
-  - Nếu user chưa đủ lịch sử, chia user thành các segment (theo giới tính, khu vực, membership...) và đề xuất các sản phẩm trending riêng cho từng segment.
-  - Nếu vẫn thiếu, fallback về global trending.
+- **Segment-Based Fallback (Cold Start)**
+  - Handles users with limited purchase history by grouping users into segments.
+  - Segments can use gender, region, membership level, or similar attributes.
+  - Falls back to global trending products when segment-level data is insufficient.
 
-- **Loại trừ sản phẩm đã mua và sản phẩm không khả dụng**
-  - Không đề xuất lại sản phẩm user đã mua hoặc nằm trong [`unavailable_items.txt`](unavailable_items.txt).
+- **Purchased and Unavailable Product Exclusion**
+  - Excludes products already purchased by the user.
+  - Excludes unavailable products listed in [`unavailable_items.txt`](unavailable_items.txt).
 
-- **Diversity bằng Maximal Marginal Relevance (MMR)**
-  - Đảm bảo danh sách đề xuất đa dạng về ngành hàng, thương hiệu, không bị trùng lặp quá nhiều sản phẩm tương tự.
+- **Diversity with Maximal Marginal Relevance (MMR)**
+  - Improves recommendation diversity across categories and brands.
+  - Reduces repeated or overly similar products in the final list.
 
-**Tham khảo code:**  
-- [`candidate_version4.py`](candidate_version4.py) - Hàm `get_candidates`, `get_advanced_fallback`, `maximal_marginal_relevance`, v.v.
+**Reference code:**
 
----
-
-### 3️⃣ Trích xuất đặc trưng (Feature Engineering)
-
-- Module [`features.py`](features.py) tính toán đặc trưng cho từng cặp khách hàng - sản phẩm:
-  - **Tương đồng lịch sử mua hàng** (co-occurrence, brand, category).
-  - **Giá, xu hướng giá, độ phổ biến**.
-  - **Tần suất mua lại, velocity, repurchase rate**.
-  - **Các đặc trưng embedding (nếu có)**.
-  - **Contextual features**: ngày, mùa vụ, v.v.
+- [`candidate_version4.py`](candidate_version4.py): `get_candidates`, `get_advanced_fallback`, `maximal_marginal_relevance`, and related candidate-generation utilities.
 
 ---
 
-### 4️⃣ Reranking (Sắp xếp lại)
+### 3️⃣ Feature Engineering
 
-- Sử dụng [`reranking.py`](reranking.py), [`reranking_lasso.py`](reranking_lasso.py), [`reranking_logistic.py`](reranking_logistic.py) để xếp hạng lại danh sách đề xuất dựa trên nhiều đặc trưng.
-- Áp dụng penalty cho sản phẩm lệch giá, tăng diversity, ưu tiên sản phẩm mới, thưởng cho đúng brand/loại hàng user yêu thích.
-
----
-
-### 5️⃣ Đánh giá
-
-- Module [`eval.py`](eval.py) đánh giá chất lượng đề xuất theo Precision@10, loại trừ các sản phẩm đã mua trong lịch sử.
-- So sánh với groundtruth thực tế.
+- [`features.py`](features.py) builds features for each customer-product pair:
+  - Purchase-history similarity: co-occurrence, brand similarity, and category similarity.
+  - Price, price trend, and product popularity.
+  - Repurchase frequency, velocity, and repurchase rate.
+  - Embedding-based features when available.
+  - Contextual features such as date and seasonality.
 
 ---
 
-### 6️⃣ Xuất kết quả
+### 4️⃣ Reranking
 
-- Lưu kết quả cuối cùng ra [`final_submission.json`](final_submission.json) hoặc [`result.json`](result.json).
-
----
-
-## 🛠️ Hướng dẫn chạy
-
-1. **Cài đặt thư viện:**
-    ```sh
-    pip install -r requirements.txt
-    ```
-    (Nếu chưa có file `requirements.txt`, cài đặt: `polars`, `pandas`, `numpy`, `tqdm`, ...)
-
-2. **Chạy pipeline chính:**
-    ```sh
-    python main.py
-    ```
-
-3. **Chạy giao diện kiểm thử:**
-    ```sh
-    streamlit run app.py
-    ```
-
-4. **Chỉnh sửa tham số:**  
-   Thay đổi các mốc thời gian, số lượng candidate, v.v. trong [`params.json`](params.json).
+- [`reranking.py`](reranking.py), [`reranking_lasso.py`](reranking_lasso.py), and [`reranking_logistic.py`](reranking_logistic.py) rerank recommendation candidates using multiple feature groups.
+- The reranking stage applies penalties for price mismatch, increases diversity, prioritizes newer products, and rewards products that match the user's preferred brands or categories.
 
 ---
 
+### 5️⃣ Evaluation
 
-## 📒 Notebook hỗ trợ & Phân tích
+- [`eval.py`](eval.py) evaluates recommendation quality using Precision@10.
+- Evaluation excludes products already purchased in the user's history.
+- Predictions are compared against the actual ground truth.
 
-| Notebook | Mục đích |
+---
+
+### 6️⃣ Output Generation
+
+- Final recommendations are saved to [`final_submission.json`](final_submission.json) or [`result.json`](result.json).
+
+---
+
+## 🛠️ How to Run
+
+1. **Install dependencies:**
+
+   ```sh
+   pip install -r requirements.txt
+   ```
+
+   If `requirements.txt` is unavailable, install the core packages manually: `polars`, `pandas`, `numpy`, `tqdm`, `scikit-learn`, `gensim`, `streamlit`, and related dependencies.
+
+2. **Run the main pipeline:**
+
+   ```sh
+   python main.py
+   ```
+
+3. **Run the Streamlit demo app:**
+
+   ```sh
+   streamlit run app.py
+   ```
+
+4. **Tune parameters:**
+
+   Update time windows, candidate counts, and other settings in [`params.json`](params.json).
+
+---
+
+## 📒 Supporting Notebooks and Analysis
+
+| Notebook | Purpose |
 |---|---|
-| [notebook/check_date_item.ipynb](notebook/check_date_item.ipynb) | Kiểm tra, xử lý dữ liệu ngày tháng của sản phẩm, phát hiện lỗi thời gian. |
-| [notebook/check_groundtruth_availability.ipynb](notebook/check_groundtruth_availability.ipynb) | Phân tích độ phủ groundtruth, kiểm tra tính khả dụng của groundtruth cho từng user/item. |
-| [notebook/EDA1.ipynb](notebook/EDA1.ipynb) | Phân tích dữ liệu tổng quan (EDA), thống kê số lượng user, item, phân phối giao dịch. |
-| [notebook/EDA2.ipynb](notebook/EDA2.ipynb) | Phân tích sâu hơn về hành vi người dùng, sản phẩm, xu hướng mua sắm. |
-| [notebook/evaluate.ipynb](notebook/evaluate.ipynb) | Đánh giá offline các kết quả đề xuất, so sánh các chiến thuật candidate/rerank. |
-| [notebook/recommendation-preprocess.ipynb](notebook/recommendation-preprocess.ipynb) | Tiền xử lý dữ liệu, chuẩn hóa, tạo các đặc trưng đầu vào cho pipeline. |
-| [notebook/test.ipynb](notebook/test.ipynb) | Notebook kiểm thử nhanh các hàm, module trong pipeline. |
+| [notebook/check_date_item.ipynb](notebook/check_date_item.ipynb) | Checks and cleans product date fields, including time-related anomalies. |
+| [notebook/check_groundtruth_availability.ipynb](notebook/check_groundtruth_availability.ipynb) | Analyzes ground-truth coverage and verifies user/item availability. |
+| [notebook/EDA1.ipynb](notebook/EDA1.ipynb) | Performs high-level exploratory data analysis, including user, item, and transaction statistics. |
+| [notebook/EDA2.ipynb](notebook/EDA2.ipynb) | Provides deeper analysis of user behavior, product behavior, and shopping trends. |
+| [notebook/evaluate.ipynb](notebook/evaluate.ipynb) | Runs offline evaluation and compares candidate-generation and reranking strategies. |
+| [notebook/recommendation-preprocess.ipynb](notebook/recommendation-preprocess.ipynb) | Preprocesses data, normalizes fields, and creates input features for the pipeline. |
+| [notebook/test.ipynb](notebook/test.ipynb) | Provides quick checks for functions and modules in the recommendation pipeline. |
 
 ---
 
-## 💡 Một số lưu ý chiến thuật
+## 💡 Strategy Notes
 
-- **Loại trừ sản phẩm không khả dụng**: Đảm bảo không recommend hàng đã ngừng kinh doanh.
-- **Tối ưu precision cho sản phẩm mới**: Chỉ tính điểm với sản phẩm chưa từng mua.
-- **Đa dạng hóa đề xuất**: Không để 1 user nhận toàn sản phẩm cùng ngành hàng/brand.
-- **Tối ưu tốc độ**: Dùng Polars cho xử lý dữ liệu lớn, chia batch khi sinh đặc trưng.
-
----
-
-## 📂 Một số file quan trọng
-
-- [`main.py`](main.py): Pipeline chính của hệ thống.
-- [`config.py`](config.py): Định nghĩa các tham số cấu hình và hàm tạo query thời gian.
-- [`features.py`](features.py): Trích xuất đặc trưng cho mô hình.
-- [`candidate_version4.py`](candidate_version4.py): Sinh candidate sản phẩm.
-- [`reranking.py`](reranking.py): Các hàm reranking kết hợp nhiều đặc trưng.
-- [`eval.py`](eval.py): Đánh giá kết quả đề xuất.
+- **Unavailable product filtering:** Prevents discontinued or unavailable products from being recommended.
+- **Precision optimization for new purchases:** Scores only products that users have not purchased before.
+- **Recommendation diversity:** Avoids returning only products from the same category or brand.
+- **Performance optimization:** Uses Polars for large-scale data processing and batch processing during feature generation.
 
 ---
 
-## 🤝 Kết quả
+## 📂 Important Files
 
-- Đạt được precision@10 **10.96%** trên dữ liệu giao dịch tháng 2/2025
+- [`main.py`](main.py): Main recommendation pipeline.
+- [`config.py`](config.py): Configuration parameters and time-window query helpers.
+- [`features.py`](features.py): Feature engineering for model input.
+- [`candidate_version4.py`](candidate_version4.py): Product candidate generation.
+- [`reranking.py`](reranking.py): Reranking functions that combine multiple feature signals.
+- [`eval.py`](eval.py): Recommendation evaluation logic.
+
+---
+
+## 🤝 Result
+
+- Achieved Precision@10 of **10.96%** on February 2025 transaction data.
 
 ---
 
